@@ -36,10 +36,12 @@ RUN mkdir -p /build \
     && mkdir -p /tmp/release \
     && mkdir -p /tmp/release/etc/cni/net.d \
     && mkdir -p /tmp/release/etc/containers \
-    && mkdir -p /tmp/release/usr/bin \
-    && mkdir -p /tmp/release/usr/libexec/podman \
+    && mkdir -p /tmp/release/usr/local/bin \
+    && mkdir -p /tmp/release/usr/local/lib/cni \
+    && mkdir -p /tmp/release/usr/local/lib/podman \
     && mkdir -p /tmp/release/usr/share/containers \
-    && mkdir -p /tmp/release/opt/cni/bin
+    && mkdir -p /tmp/release/ssd1/podman/run/containers/storage \
+    && mkdir -p /tmp/release/ssd1/podman/containers/storage
 
 # Checkout projects
 WORKDIR /build
@@ -50,29 +52,30 @@ RUN git clone --branch ${CONMON_VERSION} https://github.com/containers/conmon.gi
 # Build conmon
 RUN cd conmon \
     && make \
-    && cp bin/conmon /tmp/release/usr/libexec/podman/conmon \
+    && cp bin/conmon /tmp/release/usr/local/lib/podman/conmon \
     && cd ..
 
 
 # Build runc
 RUN cd runc \
     && make \
-    && cp ./runc /tmp/release/usr/bin/runc \
+    && cp ./runc /tmp/release/usr/local/bin/runc \
     && cd ..
 
 # Build podman
 RUN cd podman \
     && make \
-    && cp ./bin/* /tmp/release/usr/bin/ \
+    && cp ./bin/* /tmp/release/usr/local/bin/ \
     && cp vendor/github.com/containers/common/pkg/seccomp/seccomp.json /tmp/release/usr/share/containers/seccomp.json \
     && cp cni/87-podman-bridge.conflist /tmp/release/etc/cni/net.d/87-podman-bridge.conflist \
-    && cp vendor/github.com/containers/storage/storage.conf /tmp/release/etc/containers/storage.conf \
-    && cp test/registries.conf /tmp/release/etc/containers/registries.conf \
     && cp test/policy.json /tmp/release/etc/containers/policy.json \
     && cd ..
 
+COPY registries.conf /tmp/release/etc/containers/registries.conf 
+COPY storage.conf /tmp/release/etc/containers/storage.conf 
+
 # Download cni plugins
 RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-arm64-${CNI_VERSION}.tgz \ 
-    && tar zxvf cni-plugins-linux-arm64-${CNI_VERSION}.tgz -C /tmp/release/opt/cni/bin
+    && tar zxvf cni-plugins-linux-arm64-${CNI_VERSION}.tgz -C /tmp/release/usr/local/lib/cni
 
 RUN tar czvf /tmp/podman-${RELEASE}.tar.gz -C /tmp/release .

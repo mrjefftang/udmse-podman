@@ -1,0 +1,60 @@
+name: udmse-podman
+
+on:
+  push:
+
+env:
+  DOCKER_CLI_EXPERIMENTAL: enabled
+  REPOSITORY: ${{ github.actor }}/${{ github.workflow }} 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@248ae51c2e8cc9622ecf50685c8bf7150c6e8813
+        with:
+          egress-policy: audit
+
+      - name: Source checkout
+        uses: actions/checkout@v3
+ 
+      - name: Setup QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push
+        id: push-step
+        uses: docker/build-push-action@v3
+        with:
+          push: false
+          context: ${{ github.workflow }}
+          platforms: linux/arm64
+          build-args: |
+            RELEASE=${{ github.ref_name }}
+          cache-from: type=gha, scope=${{ github.workflow }}
+          cache-to: type=gha, scope=${{ github.workflow }}, mode=max
+          tags: |
+            ${{ env.REPOSITORY }}:${{ github.ref_name }}
+
+#       - name: Extract artifact
+#         uses: boostchicken-dev/actions-docker-extract@v2
+#         id: extract
+#         with:
+#           image: ${{ env.REPOSITORY }}:${{ github.ref_name }}
+#           path: /tmp/release/podman-${{ github.ref_name }}.tar.gz
+# 
+#       - name: Upload
+#         uses: actions/upload-artifact@v3
+#         with:
+#           path: ${{ steps.extract.outputs.destination }}
+#           name: podman-${{ github.ref_name }}.tar.gz
+

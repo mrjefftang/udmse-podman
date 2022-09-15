@@ -64,7 +64,7 @@ RUN cd runc \
 
 # Build podman
 RUN cd podman \
-    && make \
+    && make binaries \
     && cp ./bin/* /tmp/release/usr/local/bin/ \
     && cp vendor/github.com/containers/common/pkg/seccomp/seccomp.json /tmp/release/usr/share/containers/seccomp.json \
     && cp cni/87-podman-bridge.conflist /tmp/release/etc/cni/net.d/87-podman-bridge.conflist \

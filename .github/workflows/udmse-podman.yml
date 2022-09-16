@@ -46,7 +46,7 @@ jobs:
         id: extract
         with:
           image: ${{ env.REPOSITORY }}
-          path: /tmp/release/podman-${{ github.ref_name }}.tar.gz
+          path: /tmp/release/.
 
       - name: Upload
         uses: actions/upload-artifact@v3

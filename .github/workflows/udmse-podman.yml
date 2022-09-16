@@ -66,6 +66,9 @@ jobs:
           labels: ${{ steps.docker_meta.outputs.labels }}
           tags: |
             ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}
+      - name: Extract
+        run: |
+          docker cp $(docker create ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}):/tmp/podman-${{ env.BUILD_VERSION }}.tar.gz test.tar.gz
 
       - name: Docker Extract
         id: extract

@@ -32,14 +32,13 @@ jobs:
         id: push-step
         uses: docker/build-push-action@v3
         with:
-          push: false
+          push: true
           platforms: linux/arm64
           build-args: |
             RELEASE=${{ github.ref_name }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
-          tags: |
-            ${{ env.REPOSITORY }}:${{ github.ref_name }}
+          tags: ${{ env.REPOSITORY }}:${{ github.ref_name }}
 
       - name: Extract artifact
         uses: boostchicken-dev/actions-docker-extract@v2

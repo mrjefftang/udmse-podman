@@ -57,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          context: ${{ github.workflow }}
+          context: .
           platforms: linux/arm64
           build-args: |
             RELEASE=${{ env.BUILD_VERSION }}

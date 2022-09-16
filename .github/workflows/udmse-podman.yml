@@ -32,7 +32,7 @@ jobs:
         id: push-step
         uses: docker/build-push-action@v3
         with:
-          push: true
+          push: false
           platforms: linux/arm64
           build-args: |
             RELEASE=${{ github.ref_name }}

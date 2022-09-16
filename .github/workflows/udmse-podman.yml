@@ -42,7 +42,7 @@ jobs:
           tags: latest
 
       - name: Extract tarball
-        run: docker cp -rf $(docker create ${{ env.REPOSITORY }}:/tmp/release extracted.tar.gz
+        run: docker cp -rf $(docker create ${{ env.REPOSITORY }}):/tmp/release extracted.tar.gz
 
       - name: Upload
         uses: actions/upload-artifact@v3

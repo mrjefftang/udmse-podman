@@ -41,16 +41,16 @@ jobs:
           tags: |
             ${{ env.REPOSITORY }}:${{ github.ref_name }}
 
-#       - name: Extract artifact
-#         uses: boostchicken-dev/actions-docker-extract@v2
-#         id: extract
-#         with:
-#           image: ${{ env.REPOSITORY }}:${{ github.ref_name }}
-#           path: /tmp/release/podman-${{ github.ref_name }}.tar.gz
-# 
-#       - name: Upload
-#         uses: actions/upload-artifact@v3
-#         with:
-#           path: ${{ steps.extract.outputs.destination }}
-#           name: podman-${{ github.ref_name }}.tar.gz
+      - name: Extract artifact
+        uses: boostchicken-dev/actions-docker-extract@v2
+        id: extract
+        with:
+          image: ${{ env.REPOSITORY }}:${{ github.ref_name }}
+          path: /tmp/release/podman-${{ github.ref_name }}.tar.gz
+
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ steps.extract.outputs.destination }}
+          name: podman-${{ github.ref_name }}.tar.gz
 

@@ -39,13 +39,13 @@ jobs:
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}, mode=max
           repository: ${{ env.REPOSITORY }}
-          tags: ${{ github.ref_name }}
+          tags: latest
 
       - name: Extract artifact
         uses: boostchicken-dev/actions-docker-extract@v2
         id: extract
         with:
-          image: ${{ env.REPOSITORY }}:${{ github.ref_name }}
+          image: ${{ env.REPOSITORY }}
           path: /tmp/release/podman-${{ github.ref_name }}.tar.gz
 
       - name: Upload

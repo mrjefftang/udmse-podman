@@ -41,16 +41,12 @@ jobs:
           repository: ${{ env.REPOSITORY }}
           tags: latest
 
-      - name: Extract artifact
-        uses: boostchicken-dev/actions-docker-extract@v2
-        id: extract
-        with:
-          image: ${{ env.REPOSITORY }}
-          path: /tmp/release/.
+      - name: Extract tarball
+        run: docker cp -rf $(docker create ${{ env.REPOSITORY }}:/tmp/release extracted.tar.gz
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ steps.extract.outputs.destination }}
+          path: extracted.tar.gz
           name: podman-${{ github.ref_name }}.tar.gz
 

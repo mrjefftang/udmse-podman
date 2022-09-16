@@ -70,13 +70,6 @@ jobs:
         run: |
           docker cp $(docker create ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}):/tmp/podman-${{ env.BUILD_VERSION }}.tar.gz test.tar.gz
 
-      - name: Docker Extract
-        id: extract
-        uses: boostchicken-dev/actions-docker-extract@v2
-        with:
-          image: ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}
-          path: tmp/podman-${{ env.BUILD_VERSION }}.tar.gz
-
       - name: Upload
         uses: actions/upload-artifact@v3
         with:

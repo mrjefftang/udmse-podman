@@ -6,9 +6,6 @@ ARG RUNC_VERSION=v1.1.4
 ARG CONMON_VERSION=v2.1.4
 ARG CNI_VERSION=v1.1.1
 
-# Set buildtags for runc and podman
-ENV BUILDTAGS="exclude_graphdriver_devicemapper exclude_graphdriver_btrfs seccomp containers_image_openpgp systemd"
-
 # Install backports
 RUN echo "deb http://deb.debian.org/debian stretch-backports main contrib non-free" >> /etc/apt/sources.list.d/backports.list
 
@@ -31,17 +28,31 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         uidmap \
     && rm -rf /var/lib/apt/lists/*
 
+# Set build environment
+ENV CGO_ENABLED=1 \
+    GOOS="linux" \
+    GOARCH="arm64" \
+    DESTDIR="/build/release" \
+    PREFIX="/usr/local" \
+    BINDIR="/usr/local/bin" \
+    LIBDIR="/usr/local/lib" \
+    SYSTEMDDIR="/etc/systemd/system" \
+    USERSYSTEMDDIR="../../tmp" \
+    USERTMPFILESDIR="../../tmp" \
+    TMPFILESDIR="../../tmp" \
+    ETCDIR="/etc" \
+    BUILDTAGS="exclude_graphdriver_devicemapper exclude_graphdriver_btrfs seccomp containers_image_openpgp systemd"
+
 # Create folders
 RUN mkdir -p /build \
-    && mkdir -p /tmp/release \
-    && mkdir -p /tmp/release/etc/cni/net.d \
-    && mkdir -p /tmp/release/etc/containers \
-    && mkdir -p /tmp/release/usr/local/bin \
-    && mkdir -p /tmp/release/usr/local/lib/cni \
-    && mkdir -p /tmp/release/usr/local/lib/podman \
-    && mkdir -p /tmp/release/usr/share/containers \
-    && mkdir -p /tmp/release/ssd1/podman/run/containers/storage \
-    && mkdir -p /tmp/release/ssd1/podman/containers/storage
+    && mkdir -p ${DESTDIR} \
+    && mkdir -p ${DESTDIR}/etc/cni/net.d \
+    && mkdir -p ${DESTDIR}/etc/containers \
+    && mkdir -p ${DESTDIR}${BINDIR} \
+    && mkdir -p ${DESTDIR}${LIBDIR}/cni \
+    && mkdir -p ${DESTDIR}/usr/share/containers \
+    && mkdir -p ${DESTDIR}/ssd1/podman/run/containers/storage \
+    && mkdir -p ${DESTDIR}/ssd1/podman/containers/storage
 
 # Checkout projects
 WORKDIR /build
@@ -51,31 +62,30 @@ RUN git clone --branch ${CONMON_VERSION} https://github.com/containers/conmon.gi
 
 # Build conmon
 RUN cd conmon \
-    && make \
-    && cp bin/conmon /tmp/release/usr/local/lib/podman/conmon \
+    && make bin/conmon install.podman \
     && cd ..
-
 
 # Build runc
 RUN cd runc \
-    && make \
-    && cp ./runc /tmp/release/usr/local/bin/runc \
+    && make runc install \
     && cd ..
 
 # Build podman
 RUN cd podman \
-    && make binaries \
-    && cp ./bin/* /tmp/release/usr/local/bin/ \
-    && cp vendor/github.com/containers/common/pkg/seccomp/seccomp.json /tmp/release/usr/share/containers/seccomp.json \
-    && cp cni/87-podman-bridge.conflist /tmp/release/etc/cni/net.d/87-podman-bridge.conflist \
-    && cp test/policy.json /tmp/release/etc/containers/policy.json \
+    && make podman rootlessport install.bin install.systemd \
+    && cp vendor/github.com/containers/common/pkg/seccomp/seccomp.json ${DESTDIR}/usr/share/containers/seccomp.json \
+    && cp cni/87-podman-bridge.conflist ${DESTDIR}${ETCDIR}/cni/net.d/87-podman-bridge.conflist \
+    && cp test/policy.json ${DESTDIR}${ETCDIR}/containers/policy.json \
     && cd ..
 
-COPY registries.conf /tmp/release/etc/containers/registries.conf 
-COPY storage.conf /tmp/release/etc/containers/storage.conf 
+COPY registries.conf ${DESTDIR}${ETCDIR}/containers/registries.conf 
+COPY storage.conf ${DESTDIR}${ETCDIR}/containers/storage.conf 
 
 # Download cni plugins
 RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-arm64-${CNI_VERSION}.tgz \ 
-    && tar zxvf cni-plugins-linux-arm64-${CNI_VERSION}.tgz -C /tmp/release/usr/local/lib/cni
+    && tar zxf cni-plugins-linux-arm64-${CNI_VERSION}.tgz -C ${DESTDIR}${LIBDIR}/cni
 
-RUN tar czvf /tmp/podman-${RELEASE}.tar.gz -C /tmp/release .
+# Cleanup
+
+# Build tarball
+RUN tar czf udmse-podman-${RELEASE}.tar.gz -C ${DESTDIR} .

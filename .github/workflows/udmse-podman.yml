@@ -68,7 +68,7 @@ jobs:
             ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}
       - name: Extract
         run: |
-          docker cp $(docker create ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}):/tmp/podman-${{ env.BUILD_VERSION }}.tar.gz test.tar.gz
+          docker cp $(docker create ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}):/tmp/podman-${{ env.BUILD_VERSION }}.tar.gz extracted.tar.gz
 
       - name: Upload
         uses: actions/upload-artifact@v3

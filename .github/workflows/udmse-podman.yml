@@ -69,12 +69,12 @@ jobs:
             ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}
       - name: Extract
         run: |
-          docker cp $(docker create ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}):/build/udmse-podman-${{ env.BUILD_VERSION }}.tar.gz udmse-podman-${{ env.BUILD_VERSION }}.tar.gz
+          docker cp $(docker create ghcr.io/${{ env.REPOSITORY }}:${{ env.BUILD_VERSION }}):/build/udmse-podman-${{ env.BUILD_VERSION }}.tar.gz udmse-podman.tar.gz
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          path: udmse-podman-${{ env.BUILD_VERSION }}.tar.gz
+          path: udmse-podman.tar.gz
           name: udmse-podman-${{ env.BUILD_VERSION }}.tar.gz
 
       - name: Release

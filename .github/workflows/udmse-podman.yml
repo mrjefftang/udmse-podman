@@ -2,8 +2,6 @@ name: udmse-podman
 
 on:
   push:
-    tags: 
-      - "v*"
 
 env:
   BUILD_VERSION: ${{ github.ref_name }}
@@ -16,6 +14,7 @@ jobs:
     permissions:
       packages: write
       id-token: write
+      contents: write
 
     steps:
       - name: Harden Runner
